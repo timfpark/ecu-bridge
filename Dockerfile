@@ -2,7 +2,7 @@ FROM rust:1.52 as build
 
 COPY ./ ./
 
-RUN rustup target add armv7-unknown-linux-gnueabihf
+RUN apt-get -y install podman
 RUN cargo install cross
 RUN cross build --release --target=armv7-unknown-linux-gnueabihf
 

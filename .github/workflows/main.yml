@@ -1,0 +1,30 @@
+on: [push]
+name: ecu-bridge-container-build
+
+jobs:
+    build-and-push:
+        runs-on: ubuntu-latest
+        steps:
+            # checkout the repo
+            - name: "Checkout GitHub Action"
+              uses: actions/checkout@main
+
+            - name: "Login via Azure CLI"
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+            - name: "Build and push image"
+              uses: azure/docker-login@v1
+              with:
+                  login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+                  username: ${{ secrets.REGISTRY_USERNAME }}
+                  password: ${{ secrets.REGISTRY_PASSWORD }}
+            - name: Extract branch name
+              shell: bash
+              run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+              id: extract_branch
+            - run: |
+                  export TAG=`date -u +"%Y%m%dT%H%M%SZ"`
+                  docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/ecu-bridge-${{ steps.extract_branch.outputs.branch }}:$TAG
+                  docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ecu-bridge-${{ steps.extract_branch.outputs.branch }}:$TAG

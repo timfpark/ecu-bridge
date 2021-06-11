@@ -2,7 +2,8 @@ FROM rust:1.52 as build
 
 COPY ./ ./
 
-RUN cargo build --release
+RUN rustup target add armv7-unknown-linux-gnueabihf
+RUN cargo build --release --target=armv7-unknown-linux-gnueabihf
 
 RUN mkdir -p /build
 RUN cp target/release/ecu-bridge /build/
